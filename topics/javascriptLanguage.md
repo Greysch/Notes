@@ -57,7 +57,7 @@ Because no standards exist for the BOM, each browser has its own implementation.
 
 # Event Loop
 
-## The Javascript runtime only knows of the `heap` and `call stack`.
+The Javascript runtime only knows of the `heap` and `call stack`.
 
 The rest of the functionality, like async stuff, is provided in the form of `WebAPIs` by the browser/Node.
 
