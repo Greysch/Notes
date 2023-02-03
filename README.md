@@ -95,6 +95,7 @@
     -   [WebAssembly](./topics/wasm.md)
 -   [.NET](./topics/dotnet.md)
 -   [Notifications](./topics/notifications.md)
+-   [Learning and Improvement](./topics.productivityandresources.md)
 
 ### **APIs**
 
