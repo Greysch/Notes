@@ -18,6 +18,7 @@
 - [The Primeagen](https://www.youtube.com/@ThePrimeagen)
 - [Tech with Tim](https://www.youtube.com/@TechWithTim)
 - [Nick White](https://www.youtube.com/@NickWhite)
+- [Uma Abu](https://www.youtube.com/@UmaAbu/featured)
 
 ### TBA
 - 
