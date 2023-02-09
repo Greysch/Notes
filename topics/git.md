@@ -41,6 +41,8 @@ A previously cloned repo on a server can now pull just the changes (clone is use
 
 Github repo > Clone to local > Push to Github > Pull changes to server
 
+Local git repo upload > Create new repo > git init > Create README.md > git add . > git status > git commit origin main -m "Message" > create empty copy of the repo in Github, so Git has a connection with where to commit > git remote add origin "repo URL" > git remote -v #to test it# > git push origin main #or set an upstream by git push -u origin main#
+
 # Tips
 
 Main branch = Timeline
