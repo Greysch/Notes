@@ -31,8 +31,8 @@ Make changes and upload back.
 ```git
 git status
 git add .
-git commit -m "MESSAGE"
-git push origin master
+git commit -m "Title" -m "Extended description"
+git push origin main
 ```
 
 A previously cloned repo on a server can now pull just the changes (clone is used only the first time to create the local repo).
@@ -43,7 +43,7 @@ Github repo > Clone to local > Push to Github > Pull changes to server
 
 # Tips
 
-Master branch = Timeline
+Main branch = Timeline
 
 `HEAD` = Last commit on current branch.
 
