@@ -106,6 +106,7 @@ The positions are the lines at which the elements start or end. A grid with 5 co
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr; /* 5 columns, 6 lines */
     grid-template-rows: repeat(5, 1fr); /* shorthand for 5 rows, 6 lines */
 }
+
 #box1 {
     background: red;
     grid-column-start: 1; /* start at column line 1 */
@@ -113,6 +114,7 @@ The positions are the lines at which the elements start or end. A grid with 5 co
     grid-row-start: 1; /* start at row line 1 */
     grid-row-end: 2; /* end at rown line 1 */
 }
+
 #box2 {
     grid-column: 3/-1; /* start at column line 3, end at -1 (last) */
     grid-row: 2/-1; /* start at row line 2, end at -1 (last) */
@@ -122,18 +124,74 @@ The positions are the lines at which the elements start or end. A grid with 5 co
     padding: 10px;
     background: blue;
 }
+
 #box3 {
     background: rgba(0, 255, 0, 0.8);
     grid-column: 2/4; /* start at column line 2, end at 4 */
     grid-row: 3/5; /* start at row line 3, end at 5 */
 }
+
 .box {
     background: yellow;
 }
 ```
 
 This CSS would result in:  
-![CSS Grid](../pics/grid.jpg)
+![CSS Grid](../pics/css/css_grid.jpg)
+
+# Grid Area
+
+```html
+<div style="grid-area: header">Header</div>
+<div style="grid-area: sidebar">Sidebar</div>
+<div style="grid-area: main">Main</div>
+
+<div class="section">Section</div>
+<div class="content">Content</div>
+<div class="footer">Footer</div>
+```
+
+```css
+.section {
+    grid-area: "section";
+}
+
+.content {
+    grid-area: "content";
+}
+
+.footer {
+    grid-area: "footer";
+}
+```
+
+![CSS Grid](../pics/css/css_area_desktop.jpg)
+
+```css
+.container {
+    display: grid;
+    grid-template-areas:
+        "header header header"
+        "sidebar main main"
+        "sidebar section content"
+        "footer footer footer";
+}
+```
+
+![CSS Grid](../pics/css/css_area_mobile.jpg)
+
+```css
+.container {
+    display: grid;
+    grid-template-areas:
+        "header"
+        "sidebar"
+        "main"
+        "section"
+        "content"
+        "footer";
+}
+```
 
 # Flexbox
 

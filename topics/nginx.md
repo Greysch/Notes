@@ -30,19 +30,19 @@ You can also create a separate configuration for each, which should be placed in
 nginx -t
 
 # Reload changes made to nginx.conf
-systemctl reload nginx
+service nginx reload
 
 # Check if nginx is running.
-systemctl status nginx
+service nginx status
 
 # Start nginx.
-systemctl start nginx
+service nginx start
 
 # Stop nginx.
-systemctl stop nginx
+service nginx stop
 
 # Reload nginx.
-systemctl restart nginx
+service nginx restart
 
 # Start a server with this custom configuration.
 sudo nginx -c /home/user/elm-seed/nginx.conf
@@ -55,6 +55,9 @@ ps -ef | grep nginx
 
 # Kill a server with a PID 2847.
 kill -9 2847
+
+# Kill every nginx process.
+killall nginx
 ```
 
 The default location nginx looks in for the configuration file is `/etc/nginx/nginx.conf`, but you can pass in an arbitrary path with the `-c` flag. Ex. `nginx -c /usr/local/nginx/conf`.
@@ -63,6 +66,22 @@ The default location nginx looks in for the configuration file is `/etc/nginx/ng
 nginx -c <path> -t   # Test configuration at absolute path
 nginx -c <path>      # Start with a custom configuration.
 nginx -s <signal>    # Stop or reload.
+```
+
+# Errors
+
+> **500 internal server error nginx (13: Permission denied)**
+
+Nginx need to have +x access on all directories leading to the site's root directory.
+
+Ensure you have +x on all of the directories in the path leading to the site's root. For example, if the site root is /home/username/siteroot:
+
+```bash
+chmod +x /home/
+chmod +x /home/username
+
+# not needed
+chmod +x /home/username/siteroot
 ```
 
 # Terminology
@@ -88,6 +107,19 @@ server {               # Block start
 
 If this file is not included in the `http` block, all the different files will be served as simple text files and thus won't be rendered. Intead of writing all cases like `http { text/html html; text/css css;}` we can simply include a list of them with `http { include mime.types; }`.
 
+# root vs alias
+
+```nginx
+root /home/user/app/dist;
+# /pics/image.jpg -----> /home/user/app/dist/pics/image.jpg
+
+
+location /pics/ {
+    alias /home/user/app/pics/
+}
+# /pics/image.jpg -----> /home/user/app/pics/image.jpg
+```
+
 # Simplest server
 
 ```nginx
@@ -106,7 +138,7 @@ http {
 }
 ```
 
-After that, reload with `systemctl reload nginx`.
+After that, reload with `service nginx reload`.
 
 ```nginx
 events {}                                         # Needed to be a valid conf file.
@@ -125,6 +157,53 @@ http {
 ```
 
 App is available at `http://123.456.789.255:8080`.
+
+# Real life server
+
+```nginx
+events {}
+
+http {
+    include mime.types;
+
+    server {
+        listen 80;
+        server_name subdomain.domain.com;
+        return 301 https://subdomain.domain.com$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        server_name subdomain.domain.com;
+        ssl_certificate /etc/letsencrypt/live/subdomain.domain.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/subdomain.domain.com/privkey.pem;
+
+        root /home/user/app/dist;
+        index index.html;
+
+        location / {
+            try_files $uri /index.html; # Fixes refreshing resulting in 404 error for single page apps
+        }
+
+        location /auth {
+            proxy_pass 'http://127.0.0.1:9999';
+        }
+
+        location /api {
+            proxy_pass 'http://127.0.0.1:9999';
+        }
+
+        location /socket.io/ {
+            proxy_pass 'http://127.0.0.1:9999';
+        }
+
+        location /pics/ {
+            alias /home/user/app/pics/;
+            try_files $uri $uri/ =404;
+        }
+    }
+}
+```
 
 # Location Blocks
 
@@ -215,36 +294,56 @@ After purchasing an SSL certificate, two files are obtained.
 We place these files into `/etc/nginx/ssl/` and use this configuration in the server/domain block.
 
 ```nginx
-server {
-    listen 443 ssl;
-    ssl_certificate /etc/nginx/ssl/nginx.crt;
-    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+http {
+    server {
+        listen 80;
+
+        # IMPORTANT: Add CNAME record for www > domain.com
+        # www.domain.com won't work without this
+        server_name domain.com www.domain.com;
+        return 301 https://domain.com$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        server_name domain.com;
+
+        ssl_certificate /etc/letsencrypt/live/domain.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/domain.com/privkey.pem;
+    }
 }
+
 ```
 
 SSL/HTTPS uses the `443` port vs the standard HTTP `80`.
 
-Certbot is used for generating **Let's Encrypt** certificates and automating their renewal.
+`Certbot` is used for generating **Let's Encrypt** certificates and automating their renewal.
 
 # Proxy vs Reverse Proxy
 
-**Normal:** Client > Server  
-**Proxy:** Client > Proxy > Server
+**Proxy: Hide the origin of the request, by inserting servers in-between.**
 
-Used to hide the origin of the request.
+```
+Normal:   Client -----------------------> Server
+Proxy:    Client ---> Server (proxy) ---> Server
+```
 
-**Normal:** Client > App  
-**Reverse Proxy:** Client > Server > App
+**Reverse proxy: Prevent direct access to app i.e. exploit bad code.**
 
-Used to prevent direct access to app i.e. exploit bad code.
+```
+Normal:          Client -----------------------> App
+Reverse Proxy:   Client ---> Server (proxy) ---> App
+```
 
 To run any Linux server on port 80, you need to be running as root. If you want to run node directly on port 80, that means you have to run node as root. If your application has any security flaws, it will become significantly compounded by the fact that it has access to do _anything it wants_. For example, if you write something that accidentally allows the user to read arbitrary files, now they can read files from other server user's accounts.
 
-If you use nginx in front of node, you can run your node as a limited user on port 3000 (or whatever) and then have nginx run as root on port 80, forwarding requests to port 3000. Now the node application is limited to the user permissions you give it.
+If you use nginx in front of node, you can run your node as a limited user on port `3000` (or whatever) and then have nginx run as root on port `80`, forwarding requests to port `3000`. Now the node application is limited to the user permissions you give it.
 
 It's always better to use nginx as a proxy for a node.js server; nginx can proxy to a number of node backends and should any of them die can fail-over automatically with the benefit that, if there is an issue with the node interpreter (for instance while upgrading) and it stops responding, it can serve a fall-back HTML page.
 
-Additionally, you shouldn't be using node.js for serving "static" files such as images, js/css files, etc. Use node.js for the complex stuff and let nginx take care of the things it's good at - serving files from the disk or from a cache.
+> **You shouldn't be using node.js for serving "static" files such as images, js/css files, etc.**
+
+Use node.js for the complex stuff and let nginx take care of the things it's good at - serving files from the disk or from a cache.
 
 # Reverse Proxy
 

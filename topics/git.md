@@ -4,6 +4,68 @@ A commit in a git repository records a snapshot of all the files in your directo
 
 Git wants to keep commits as lightweight as possible though, so it doesn't just blindly copy the entire directory every time you commit. It can (when possible) compress a commit as a set of changes, or a "delta", from one version of the repository to the next.
 
+# Config
+
+You start a git repo with:
+
+```bash
+git init
+```
+
+Each repo has its own configurations. You can see them with:
+
+```bash
+git config --list
+```
+
+Here are the essential configurations you need to add:
+
+```bash
+# Configure owner of changes just for current repo
+git config user.name "NAME"
+git config user.email "EMAIL"
+```
+
+Github contributions count only if the repo email is the same as the github email.
+
+When doing `git push`, this gets the password from the `.git-credentials` file, or adds it there on first push .
+
+```bash
+git config credential.helper store
+```
+
+# Global
+
+```bash
+# Configure DEFAULT owner of changes for all repos
+git config --global user.name "NAME"
+git config --global user.email "EMAIL"
+
+# Configure password token
+# Generated in developer settings / personal access tokens / classic
+# Get the password from the .git-credentials file, or add it there on first push
+git config --global credential.helper store
+
+# Allows multiple repositories on the same host to use different credentials. By default (false) it uses the first match.
+git config --global credential.useHttpPath true
+```
+
+# Feature branches vs Trunk-based development
+
+Feature branches i.e. Main is deployed.
+
+![](../pics/git/git_feature1.png)
+
+![](../pics/git/git_feature2.jpg)
+
+Trunk-based i.e. Branches are deployed.
+
+![](../pics/git/git_trunk1a.png)
+
+![](../pics/git/git_trunk1b.png)
+
+![](../pics/git/git_trunk2.jpg)
+
 # Rules
 
 1. Create a Git repository for every new project.
@@ -16,7 +78,7 @@ Git wants to keep commits as lightweight as possible though, so it doesn't just 
 [Source 2](https://www.freecodecamp.org/news/how-to-use-git-efficiently-54320a236369/)
 [Source 3](https://pathof.dev/blog/making-sense-of-git-and-github)
 
-# Quick Edit
+# Git Workflow
 
 Download from repository and set user.
 
@@ -116,14 +178,6 @@ git help
 git help COMMAND
 ```
 
-# Configuration
-
-```bash
-# Setting up owner of changes for all repos. Github contributions count only with the github email.
-git config --global user.name "NAME"
-git config --global user.email "EMAIL"
-```
-
 # Diff (See Changes)
 
 ```bash
@@ -211,7 +265,17 @@ git push --tags
 
 # Undo
 
-DON'T DO THESE AFTER PUSHING!
+Unstaged
+
+```bash
+# Tracked files
+git restore .
+
+# Untracked files
+git clean -f
+```
+
+Staged (DON'T DO THESE AFTER PUSHING!)
 
 ```bash
 # Revert a file to the last commit version.
@@ -383,6 +447,14 @@ git push -u origin master
 ```
 
 `-u` remember the repo and the branch, so that only `git push` can be used.
+
+**Remember login credentials**
+
+This stores the username and password in a `.git-credentials` file in home.
+
+```bash
+git config --global credential.helper store
+```
 
 # Pull Requests
 
